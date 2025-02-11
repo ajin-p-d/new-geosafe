@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive GeoSafe Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>GeoSafe Interactive Map</h1>
+        <p>Select a Panchayat to view its location on the map:</p>
+        <select id="panchayat-select">
+            <option value="">-- Select Panchayat --</option>
+            <option value="manakkad">Manakkad</option>
+            <option value="vannapuram">Vannapuram</option>
+            <option value="thodupuzha">Thodupuzha</option>
+            <option value="edavetty">Edavetty</option>
+            <option value="karimannoor">Karimannoor</option>
+            <option value="kanjikuzhy">Kanjikuzhy</option>
+            <option value="muthalakodam">Muthalakodam</option>
+            <option value="kodikulam">Kodikulam</option>
+        </select>
+        <br>
+        <button id="reset-button">Reset Map</button>
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([9.8945, 76.7221], 12); // Default coordinates
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Panchayat coordinates
+        const panchayatCoords = {
+            manakkad: { coords: [9.912, 76.724], info: "Manakkad Panchayat" },
+            vannapuram: { coords: [9.914, 76.741], info: "Vannapuram Panchayat" },
+            thodupuzha: { coords: [9.892, 76.721], info: "Thodupuzha Panchayat" },
+            edavetty: { coords: [9.873, 76.720], info: "Edavetty Panchayat" },
+            karimannoor: { coords: [9.902, 76.730], info: "Karimannoor Panchayat" },
+            kanjikuzhy: { coords: [9.865, 76.702], info: "Kanjikuzhy Panchayat" },
+            muthalakodam: { coords: [9.905, 76.719], info: "Muthalakodam Panchayat" },
+            kodikulam: { coords: [9.880, 76.731], info: "Kodikulam Panchayat" },
+        };
+
+        // Marker for selected panchayat
+        let marker;
+
+        // Dropdown functionality
+        const selectElement = document.getElementById('panchayat-select');
+        selectElement.addEventListener('change', () => {
+            const selectedPanchayat = selectElement.value;
+            if (selectedPanchayat && panchayatCoords[selectedPanchayat]) {
+                const { coords, info } = panchayatCoords[selectedPanchayat];
+                if (marker) map.removeLayer(marker); // Remove existing marker
+                marker = L.marker(coords).addTo(map).bindPopup(info).openPopup();
+                map.setView(coords, 14); // Zoom to selected panchayat
+            }
+        });
+
+        // Reset button functionality
+        const resetButton = document.getElementById('reset-button');
+        resetButton.addEventListener('click', () => {
+            map.setView([9.8945, 76.7221], 12); // Reset to default view
+            if (marker) map.removeLayer(marker); // Remove existing marker
+            selectElement.value = ""; // Reset dropdown
+        });
+    </script>
+</body>
+</html>

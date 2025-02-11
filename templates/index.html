@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GeoSafe Pricinng Template</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="../static/style.css">
+  </head>
+  <body class="w3-light-grey">
+    <div class="container">
+      <!-- Header -->
+      <header class="w3-container w3-center w3-padding-32"> 
+        <h1><b>GeoSafe Pricing</b></h1>
+        <p>Landvalue Prediction Based on Disaster Vulnerability</p>
+      </header>
+      <!-- Grid -->
+       <div class="row">
+          <div class="item pricetag">
+            <h2>Predict Price</h2>
+            <form>
+                <select id="State-select">
+                    <option value="">Select State</option>
+                </select>
+              <select id="district-select">
+                  <option value="">Select District</option>
+              </select>
+              <select id="taluk-select">
+                  <option value="">Select Taluk</option>
+              </select>
+              <select id="panchayath-select">
+                  <option value="">Select Panchayath</option>
+              </select>
+              <!-- <input type="text" id="location-input" placeholder="Enter the Location"> -->
+              <button id="submit-button">Submit</button>
+            </form>
+          </div>
+          <div class="item mapdata">
+            <div class="weather-info">
+              <h2>Region Data</h2>
+              <p>Precipitation Rate: <span id="precipitation">0 mm</span></p>
+              <p>Rainfall: <span id="rainfall">0 mm</span></p>
+              <p>Soil Moisture: <span id="soil-moisture">0%</span></p>
+            </div>
+            <div class="map" id="map"></div>
+          </div>
+       </div>
+    </div>
+    <script>
+      // Data for all districts, taluks, and panchayaths in Kerala
+      const keralaData = {
+          "Thiruvananthapuram": {
+              taluks: {
+                  "Neyyattinkara": ["Neyyattinkara", "Pozhiyoor", "Kottukal"],
+                  "Thiruvananthapuram": ["Thiruvananthapuram", "Kazhakootam", "Kovalam"],
+                  "Chirayinkeezhu": ["Chirayinkeezhu", "Varkala", "Attingal"]
+              }
+          },
+          "Kollam": {
+              taluks: {
+                  "Kollam": ["Kollam", "Eravipuram", "Thrikkadavoor"],
+                  "Karunagapally": ["Karunagapally", "Oachira", "Clappana"],
+                  "Kottarakkara": ["Kottarakkara", "Punalur", "Pathanapuram"]
+              }
+          },
+          "Pathanamthitta": {
+              taluks: {
+                  "Pathanamthitta": ["Pathanamthitta", "Adoor", "Ranni"],
+                  "Thiruvalla": ["Thiruvalla", "Mallappally", "Kozhencherry"]
+              }
+          },
+          "Alappuzha": {
+              taluks: {
+                  "Alappuzha": ["Alappuzha", "Ambalappuzha", "Punnapra"],
+                  "Cherthala": ["Cherthala", "Thuravoor", "Kanjikuzhy"],
+                  "Kuttanad": ["Kuttanad", "Thakazhy", "Champakulam"]
+              }
+          },
+          "Kottayam": {
+              taluks: {
+                  "Kottayam": ["Kottayam", "Changanassery", "Vaikom"],
+                  "Meenachil": ["Meenachil", "Pala", "Bharananganam"]
+              }
+          },
+          "Idukki": {
+              taluks: {
+                  "Idukki": ["Idukki", "Thodupuzha", "Udumbanchola"],
+                  "Devikulam": ["Devikulam", "Munnar", "Kanthalloor"]
+              }
+          },
+          "Ernakulam": {
+              taluks: {
+                  "Ernakulam": ["Ernakulam", "Kochi", "Aluva"],
+                  "Kothamangalam": ["Kothamangalam", "Muvattupuzha", "Kunnathunad"]
+              }
+          },
+          "Thrissur": {
+              taluks: {
+                  "Thrissur": ["Thrissur", "Chavakkad", "Kodungallur"],
+                  "Mukundapuram": ["Mukundapuram", "Irinjalakuda", "Chalakudy"]
+              }
+          },
+          "Palakkad": {
+              taluks: {
+                  "Palakkad": ["Palakkad", "Ottapalam", "Alathur"],
+                  "Chittur": ["Chittur", "Kollengode", "Nenmara"]
+              }
+          },
+          "Malappuram": {
+              taluks: {
+                  "Malappuram": ["Malappuram", "Perinthalmanna", "Ponnani"],
+                  "Tirur": ["Tirur", "Tirurangadi", "Kottakkal"]
+              }
+          },
+          "Kozhikode": {
+              taluks: {
+                  "Kozhikode": ["Kozhikode", "Vatakara", "Koyilandy"],
+                  "Thamarassery": ["Thamarassery", "Koduvally", "Balussery"]
+              }
+          },
+          "Wayanad": {
+              taluks: {
+                  "Wayanad": ["Wayanad", "Mananthavady", "Sulthan Bathery"],
+                  "Vythiri": ["Vythiri", "Kalpetta", "Meppadi"]
+              }
+          },
+          "Kannur": {
+              taluks: {
+                  "Kannur": ["Kannur", "Thalassery", "Payyannur"],
+                  "Taliparamba": ["Taliparamba", "Iritty", "Koothuparamba"]
+              }
+          },
+          "Kasaragod": {
+              taluks: {
+                  "Kasaragod": ["Kasaragod", "Kanhangad", "Manjeshwar"],
+                  "Hosdurg": ["Hosdurg", "Vellarikundu", "Peralassery"]
+              }
+          }
+      };
+
+      // Initialize dropdowns
+      const districtSelect = document.getElementById('district-select');
+      const talukSelect = document.getElementById('taluk-select');
+      const panchayathSelect = document.getElementById('panchayath-select');
+
+      // Populate districts
+      Object.keys(keralaData).forEach(district => {
+          const option = document.createElement('option');
+          option.value = district;
+          option.textContent = district;
+          districtSelect.appendChild(option);
+      });
+
+      // Update taluks based on selected district
+      districtSelect.addEventListener('change', () => {
+          const selectedDistrict = districtSelect.value;
+          talukSelect.innerHTML = '<option value="">Select Taluk</option>';
+          panchayathSelect.innerHTML = '<option value="">Select Panchayath</option>';
+
+          if (selectedDistrict && keralaData[selectedDistrict]) {
+              Object.keys(keralaData[selectedDistrict].taluks).forEach(taluk => {
+                  const option = document.createElement('option');
+                  option.value = taluk;
+                  option.textContent = taluk;
+                  talukSelect.appendChild(option);
+              });
+          }
+      });
+
+      // Update panchayaths based on selected taluk
+      talukSelect.addEventListener('change', () => {
+          const selectedDistrict = districtSelect.value;
+          const selectedTaluk = talukSelect.value;
+          panchayathSelect.innerHTML = '<option value="">Select Panchayath</option>';
+
+          if (selectedDistrict && selectedTaluk && keralaData[selectedDistrict].taluks[selectedTaluk]) {
+              keralaData[selectedDistrict].taluks[selectedTaluk].forEach(panchayath => {
+                  const option = document.createElement('option');
+                  option.value = panchayath;
+                  option.textContent = panchayath;
+                  panchayathSelect.appendChild(option);
+              });
+          }
+      });
+
+      // Initialize map
+      const map = L.map('map').setView([9.8945, 76.7221], 12); // Default coordinates
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Marker for selected location
+      let marker;
+
+      // Submit button functionality
+      const submitButton = document.getElementById('submit-button');
+      submitButton.addEventListener('click', () => {
+          const district = districtSelect.value;
+          const taluk = talukSelect.value;
+          const panchayath = panchayathSelect.value;
+          const location = document.getElementById('location-input').value;
+
+          if (district && taluk && panchayath && location) {
+              // Simulate fetching weather data
+              document.getElementById('precipitation').textContent = "10 mm";
+              document.getElementById('rainfall').textContent = "50 mm";
+              document.getElementById('soil-moisture').textContent = "30%";
+
+              // Update map with a marker for the selected location
+              const coords = [9.8945, 76.7221]; // Replace with actual coordinates
+              if (marker) map.removeLayer(marker); // Remove existing marker
+              marker = L.marker(coords).addTo(map).bindPopup(location).openPopup();
+              map.setView(coords, 14); // Zoom to selected location
+          } else {
+              alert('Please fill all the fields!');
+          }
+      });
+  </script> 
+  </body>
+</html>
