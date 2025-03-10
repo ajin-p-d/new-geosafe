@@ -24,15 +24,54 @@
                 <select id="State-select">
                     <option value="">Select State</option>
                 </select>
-              <select id="district-select">
+              <select id="district">
                   <option value="">Select District</option>
               </select>
-              <select id="taluk-select">
+              <select id="taluk">
                   <option value="">Select Taluk</option>
               </select>
-              <select id="panchayath-select">
-                  <option value="">Select Panchayath</option>
+              <select id="village">
+                  <option value="">Select Village</option>
               </select>
+              <script>
+                $(document).ready(function() {
+                    // Load Districts
+                    $.get("/districts", function(data) {
+                        data.forEach(district => {
+                            $("#district").append(`<option value="${district}">${district}</option>`);
+                        });
+                    });
+        
+                    // Load Taluks based on selected district
+                    $("#district").change(function() {
+                        let selectedDistrict = $(this).val();
+                        if (selectedDistrict) {
+                            $("#taluk").html('<option value="">--Select Taluk--</option>').prop('disabled', false);
+                            $("#village").html('<option value="">--Select Village--</option>').prop('disabled', true);
+                            
+                            $.get(`/taluks/${selectedDistrict}`, function(data) {
+                                data.forEach(taluk => {
+                                    $("#taluk").append(`<option value="${taluk}">${taluk}</option>`);
+                                });
+                            });
+                        }
+                    });
+        
+                    // Load Villages based on selected taluk
+                    $("#taluk").change(function() {
+                        let selectedTaluk = $(this).val();
+                        if (selectedTaluk) {
+                            $("#village").html('<option value="">--Select Village--</option>').prop('disabled', false);
+        
+                            $.get(`/villages/${selectedTaluk}`, function(data) {
+                                data.forEach(village => {
+                                    $("#village").append(`<option value="${village}">${village}</option>`);
+                                });
+                            });
+                        }
+                    });
+                });
+            </script>
               <!-- <input type="text" id="location-input" placeholder="Enter the Location"> -->
               <button id="submit-button">Submit</button>
             </form>
@@ -40,15 +79,17 @@
           <div class="item mapdata">
             <div class="weather-info">
               <h2>Region Data</h2>
-              <p>Precipitation Rate: <span id="precipitation">0 mm</span></p>
-              <p>Rainfall: <span id="rainfall">0 mm</span></p>
-              <p>Soil Moisture: <span id="soil-moisture">0%</span></p>
-            </div>
+              <div class="weather-data">
+                <p>Precipitation Rate: <span id="precipitation">0 mm</span></p>
+                <p>Rainfall: <span id="rainfall">0 mm</span></p>
+                <p>Soil Moisture: <span id="soil-moisture">0%</span></p>  
+              </div>
+              </div>
             <div class="map" id="map"></div>
           </div>
        </div>
     </div>
-    <script>
+    <!-- <script>
       // Data for all districts, taluks, and panchayaths in Kerala
       const keralaData = {
           "Thiruvananthapuram": {
@@ -218,6 +259,6 @@
               alert('Please fill all the fields!');
           }
       });
-  </script> 
+  </script>  -->
   </body>
 </html>
