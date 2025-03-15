@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>GeoSafe Pricinng Template</title>
+    <title>GeoSafe Pricing Template</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="../static/style.css">
+    <style>
+      #map { height: 400px; }
+    </style>
   </head>
   <body class="w3-light-grey">
     <div class="container">
@@ -57,5 +60,21 @@
           </div>
        </div>
     </div>
+
+    <script>
+      // Initialize the map and set its view to a specific geographical location and a zoom level
+      var map = L.map('map').setView([20.5937, 78.9629], 5); // Centered on India with zoom level 5
+
+      // Add the OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Optionally, you can add a marker
+      var marker = L.marker([20.5937, 78.9629]).addTo(map)
+        .bindPopup('India')
+        .openPopup();
+    </script>
   </body>
 </html>
